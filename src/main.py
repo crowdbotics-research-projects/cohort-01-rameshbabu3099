@@ -1,7 +1,14 @@
 from fastapi import FastAPI
-from src.curd_apis import router
+from src import curd_apis
+from .db import get_db, engine, Base
+from .schema import *
 
 app = FastAPI()
 
 
-app.include_router(router)
+@app.on_event("startup")
+def startup_event():
+    Base.metadata.create_all(bind=engine)
+
+
+app.include_router(curd_apis.router)

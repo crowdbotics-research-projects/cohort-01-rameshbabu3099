@@ -1,96 +1,85 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+from pydantic import BaseModel, EmailStr, Field
 
 
-class UserCreate(BaseModel):
+class RegisterRequest(BaseModel):
     username: str
-    email: str
     password: str
+    email: Optional[EmailStr] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+
+    class Config:
+        orm_mode = True
 
 
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
-
-class User(BaseModel):
-    id: int
-    username: str
-
-
-class Token(BaseModel):
+class LoginRequest(BaseModel):
     username: str
     password: str
 
 
-class Forgot(BaseModel):
+class ResetPasswordRequest(BaseModel):
     email: str
-    password: str
-    confirm_password: str
+    new_password: str
 
 
-class Plans(BaseModel):
+# Pydantic model for creating a magazine
+class MagazineCreate(BaseModel):
+    name: str
+    description: str
+    base_price: float
+    discount: Optional[float] = Field(default=10.0)
+    discount_half_yearly: Optional[float] = Field(default=10.0)
+    discount_quarterly: Optional[float] = None
+    discount_annual: Optional[float] = None
+
+    class Config:
+        orm_mode = True
+
+
+class PlanResponse(BaseModel):
     id: int
     title: str
     description: str
     renewal_period: int
-    tier: int
-    discount: float
-
-    class Config:
-        orm_mode = True
 
 
-class Magazines(BaseModel):
-    id: int
-    name: str
+class PlanModel(BaseModel):
+    title: str
     description: str
-    base_price: float
-    plans: List[Plans]
-
-    class Config:
-        orm_mode = True
+    renewal_period: int
 
 
-class SubscriptionBase(BaseModel):
+class SubscriptionCreate(BaseModel):
     user_id: int
     magazine_id: int
     plan_id: int
     price: float
-    renewal_date: str
-    is_active: bool
-
-
-class SubscriptionResponse(SubscriptionBase):
-    id: int
+    # price_at_renewal: int
+    next_renewal_date: datetime
 
     class Config:
         orm_mode = True
 
-
-class SubscriptionCreate(BaseModel):
-    magazine_id: int
-    plan_id: int
-
-
-class SubscriptionOut(BaseModel):
-    id: int
-    magazine_id: int
-    plan_id: int
-    price: float
-    renewal_date: datetime
-    is_active: bool
-
-    class Config:
-        orm_mode = True
 
 class SubscriptionUpdate(BaseModel):
-    magazine_id: int
-    plan_id: int
-    price: float
-    renewal_date: datetime
-    is_active: Optional[bool] = True  
+    magazine_id: int = None  # Optional field
+    plan_id: int = None  # Optional field
+    price: float = None  # Optional field
+    next_renewal_date: datetime = None  # Optional field
 
     class Config:
         orm_mode = True
+
+
+class SubscriptionResponse(BaseModel):
+    id: int
+    user_id: int
+    magazine_id: int
+    plan_id: int
+    price: float
+    price_at_renewal: float
+    next_renewal_date: datetime
+    is_active: bool
